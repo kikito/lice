@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'iconv'
 
 class Lice
   class File < ::File
@@ -15,6 +16,10 @@ class Lice
 
     def is_post?
       (name =~ POST_DATE_REGEXP) && (POST_EXTENSIONS.include? extension)
+    end
+
+    def is_polo?
+      extension == 'polo'
     end
 
     def name
@@ -53,7 +58,7 @@ class Lice
     end
 
     def slug
-      remove_html(name[11..-1])
+      slugify(remove_polo(remove_html(name[11..-1])))
     end
 
     def output_path
@@ -70,10 +75,6 @@ class Lice
 
     private
 
-    def remove_html(str)
-      str[/(.+)\.html$/, 1]
-    end
-
     def post_output_folder
       ::File.join(output_folder, year, month, day, slug)
     end
@@ -81,6 +82,23 @@ class Lice
     def process_post
       FileUtils.mkdir_p(post_output_folder)
       FileUtils.cp(self.path, output_path)
+    end
+
+    def slugify(text)
+      text.downcase!
+      text = Iconv.conv('ASCII//TRANSLIT//IGNORE', 'UTF8', text)
+      text.gsub! /\s+/, '-'        # spaces
+      text.gsub! /_+/, '-'         # underscores
+      text.gsub! /[^a-z0-9-]+/, '' # non-alpha
+      text.chomp '-'               # trailing hyphens
+    end
+
+    def remove_html(str)
+      str[/(.+)\.html$/, 1] || str
+    end
+
+    def remove_polo(str)
+      str[/(.+)\.polo$/, 1] || str
     end
 
   end
