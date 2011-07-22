@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'iconv'
+require 'pathname'
 
 class Lice
   class File < ::File
@@ -7,11 +8,12 @@ class Lice
     POST_EXTENSIONS = %w{html polo}
     POST_DATE_REGEXP = /(\d\d\d\d\-\d\d\-\d\d).*/
 
-    attr_reader :output_folder
+    attr_reader :output_root_folder, :input_root_folder
 
-    def initialize(path, output_folder)
+    def initialize(path, input_root_folder, output_root_folder)
       super(path)
-      @output_folder = output_folder
+      @input_root_folder = input_root_folder
+      @output_root_folder = output_root_folder
     end
 
     def is_post?
@@ -63,7 +65,7 @@ class Lice
 
     def output_path
       if is_post?
-        ::File.join(post_output_folder,  'index.html')
+        ::File.join(post_output_folder, 'index.html')
       else
         ::File.join(output_folder, name)
       end
@@ -78,7 +80,22 @@ class Lice
     def post_output_folder
       ::File.join(output_folder, year, month, day, slug)
     end
-    
+
+    def output_folder
+      relative_path = ::File.join(output_root_folder, relative_path_from_root)
+      ::File.absolute_path(relative_path)
+    end
+
+    def containing_directory
+      ::File.dirname(self.path)
+    end
+
+    def relative_path_from_root
+      pathname = Pathname.new(containing_directory)
+      relative_pathname = pathname.relative_path_from(Pathname.new(input_root_folder))
+      relative_pathname.to_s
+    end
+
     def process_post
       FileUtils.mkdir_p(post_output_folder)
       FileUtils.cp(self.path, output_path)

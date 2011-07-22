@@ -45,13 +45,13 @@ module Test
 
       def test_post_files_are_translated_into_a_folder_structure_ending_on_an_index_html
         f = open_file '2011-01-02-a-title.html'
-        assert_equals f.output_path, ::File.join(output_folder, '2011', '01', '02', 'a-title', 'index.html')
+        assert_equals f.output_path, output_folder('2011', '01', '02', 'a-title', 'index.html')
       end
 
       def test_polo_posts_have_their_polo_bit_removed
         f = open_file '2011-01-04-a-polo-post.polo'
         assert_equals 'a-polo-post', f.slug
-        assert_equals f.output_path, ::File.join(output_folder, '2011', '01', '04', 'a-polo-post', 'index.html')
+        assert_equals f.output_path, output_folder('2011', '01', '04', 'a-polo-post', 'index.html')
       end
 
       def test_is_polo_returns_true_in_polo_posts
@@ -59,10 +59,25 @@ module Test
         assert f.is_polo?
       end
 
+      def test_regular_file_inside_a_folder_gets_copied_to_output_with_its_path
+        f = open_file 'subdir', 'hello.txt'
+        assert_equals f.output_path, output_folder('subdir', 'hello.txt')
+      end
+
+      def test_post_file_inside_a_folder_gets_copied_to_output_with_its_path
+        f = open_file 'subdir', '2011-01-05-a-title.html'
+        assert_equals f.output_path, output_folder('subdir', '2011', '01', '05', 'a-title', 'index.html')
+      end
+
+      def test_polo_post_inside_a_folder_gets_copied_to_output_with_its_path
+        f = open_file 'subdir', '2011-01-06-a-polo-post.html'
+        assert_equals f.output_path, output_folder('subdir', '2011', '01', '06', 'a-polo-post', 'index.html')
+      end
+
       private
 
-      def open_file(name)
-        ::Lice::File.new(input_folder(name), output_folder)
+      def open_file(*subdirs)
+        ::Lice::File.new(input_folder(*subdirs), input_folder, output_folder)
       end
     end
   end

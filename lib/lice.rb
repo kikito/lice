@@ -27,7 +27,7 @@ class Lice
 
   def run
     files.each do |file_path|
-      f = Lice::File.new(file_path, output_folder)
+      f = Lice::File.new(file_path, input_folder, output_folder)
       f.process
     end
   end

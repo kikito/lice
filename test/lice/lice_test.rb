@@ -46,7 +46,7 @@ module Test
         lice.run
         # output_files = Dir.new(output_folder).entries - ['.', '..']
         lice.files.each do |file_path|
-          file = ::Lice::File.new(file_path, output_folder)
+          file = ::Lice::File.new(file_path, input_folder, output_folder)
           assert(file.output_file_exists?)
         end
       end
